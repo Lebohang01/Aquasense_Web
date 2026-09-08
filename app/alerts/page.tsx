@@ -45,22 +45,23 @@ export default function AlertsPage() {
 
   fetchAlerts();
 
-  const ch = supabase
-    .channel(`alerts-web-${Date.now()}`)
+  const channel = supabase.channel(`alerts-web-${Date.now()}`);
+
+  channel
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'alerts' },
-      fetchAlerts
+      () => fetchAlerts()
     )
     .on(
       'postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'alerts' },
-      fetchAlerts
+      () => fetchAlerts()
     )
     .subscribe();
 
   return () => {
-    void supabase.removeChannel(ch);
+    supabase.removeChannel(channel);
   };
 }, [fetchAlerts, router]);
 
