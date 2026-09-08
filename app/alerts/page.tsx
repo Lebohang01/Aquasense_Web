@@ -45,7 +45,9 @@ export default function AlertsPage() {
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'alerts'},()=>fetchAlerts())
       .on('postgres_changes',{event:'UPDATE',schema:'public',table:'alerts'},()=>fetchAlerts())
       .subscribe();
-    return () => supabase.removeChannel(ch);
+    return () => {
+    void supabase.removeChannel(ch);
+  };
   }, [fetchAlerts, router]);
 
   const resolve = async (id: string) => {
