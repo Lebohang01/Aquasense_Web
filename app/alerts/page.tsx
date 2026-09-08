@@ -39,16 +39,30 @@ export default function AlertsPage() {
   }, [filter]);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data:{ user }}) => { if (!user) router.push('/login'); });
-    fetchAlerts();
-    const ch = supabase.channel('alerts-web-' + Date.now())
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'alerts'},()=>fetchAlerts())
-      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'alerts'},()=>fetchAlerts())
-      .subscribe();
-    return () => {
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    if (!user) router.push('/login');
+  });
+
+  fetchAlerts();
+
+  const ch = supabase
+    .channel(`alerts-web-${Date.now()}`)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'alerts' },
+      fetchAlerts
+    )
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'alerts' },
+      fetchAlerts
+    )
+    .subscribe();
+
+  return () => {
     void supabase.removeChannel(ch);
   };
-  }, [fetchAlerts, router]);
+}, [fetchAlerts, router]);
 
   const resolve = async (id: string) => {
     setResolving(id);
